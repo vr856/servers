@@ -30,6 +30,12 @@
     "@modelcontextprotocol/server-puppeteer": "*",
     "@modelcontextprotocol/server-sequential-thinking": "*",
     "@modelcontextprotocol/server-slack": "*",
+    "pg": "^8.13.3",
+    "tsx": "^4.19.3",
     "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.7",
+    "typescript": "^5.8.2"
   }
 }

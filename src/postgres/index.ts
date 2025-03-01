@@ -104,6 +104,16 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
         },
       },
+      {
+        name: "execute",
+        description: "Run a SQL command that can modify the database",
+        inputSchema: {
+          type: "object",
+          properties: {
+            sql: { type: "string" },
+          },
+        },
+      }
     ],
   };
 });
@@ -129,6 +139,34 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           console.warn("Could not roll back transaction:", error),
         );
 
+      client.release();
+    }
+  } else if (request.params.name === "execute") {
+    const sql = request.params.arguments?.sql as string;
+
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+      const result = await client.query(sql);
+      await client.query("COMMIT");
+      
+      return {
+        content: [{ 
+          type: "text", 
+          text: JSON.stringify({
+            rowCount: result.rowCount,
+            command: result.command,
+            rows: result.rows
+          }, null, 2) 
+        }],
+        isError: false,
+      };
+    } catch (error) {
+      await client.query("ROLLBACK").catch(e => 
+        console.warn("Could not roll back transaction:", e)
+      );
+      throw error;
+    } finally {
       client.release();
     }
   }
